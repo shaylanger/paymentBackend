@@ -6,7 +6,7 @@ authors = ["Shay Langer"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.9.16"
 dependency-injector = "^4.44.0"
 fastapi = "^0.115.6"
 uvicorn = "^0.32.1"
