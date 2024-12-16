@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from bson import ObjectId
 import pandas
 
@@ -57,7 +57,10 @@ class PaymentService:
 
     def create_payment(payment: Payment) -> str:
         payment_dict = payment.model_dump()
-        payment_dict["payee_added_date_utc"] = datetime.now(datetime.timezone.utc)()
+        payment_dict["id"] = "0"
+        payment_dict["payee_due_date"] = datetime.combine(
+            payment_dict["payee_due_date"], datetime.min.time()
+        )
         try:
             result = payment_collection.insert_one(payment_dict)
         except Exception as e:

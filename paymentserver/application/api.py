@@ -116,5 +116,7 @@ async def download_evidence(payment_id: str):
     return StreamingResponse(
         BytesIO(evidence["content"]),
         media_type="application/octet-stream",
-        headers={"Content-Disposition": f"attachment; filename={evidence['filename']}"},
+        headers={
+            "Content-Disposition": f"attachment; filename=${evidence['filename']}"
+        },
     )
