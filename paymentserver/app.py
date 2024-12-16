@@ -12,7 +12,11 @@ app.include_router(api.router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],  # Allow requests from localhost:4200
+    allow_origins=[
+        "http://localhost:4200",
+        "http://127.0.0.1:8080",
+        "http://paymentappfrontend.s3-website.us-east-2.amazonaws.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
