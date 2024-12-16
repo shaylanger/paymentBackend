@@ -14,7 +14,6 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:4200",
-        "http://127.0.0.1:8080",
         "http://paymentappfrontend.s3-website.us-east-2.amazonaws.com",
     ],
     allow_credentials=True,
