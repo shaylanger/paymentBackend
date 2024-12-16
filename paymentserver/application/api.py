@@ -1,7 +1,6 @@
-from http.client import HTTPException
 from typing import Optional
 
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 
@@ -37,7 +36,7 @@ async def get_payments(
 
 
 @router.post("/payment/")
-async def create_payment(payment: Payment) -> str:
+async def create_payment(payment: Payment):
     if payment.payee_payment_status != "pending":
         raise HTTPException(
             status_code=400,
@@ -56,7 +55,7 @@ async def create_payment(payment: Payment) -> str:
 
 
 @router.put("/payment/{payment_id}")
-async def update_payment(payment_id: str, payment: Payment) -> str:
+async def update_payment(payment_id: str, payment: Payment):
     payment_statuses = ["pending", "due_now", "completed", "overdue"]
 
     if payment.payee_payment_status not in payment_statuses:
@@ -65,7 +64,7 @@ async def update_payment(payment_id: str, payment: Payment) -> str:
             detail="payment status must be one of: pending, due_now, completed, overdue",
         )
     try:
-        PaymentService.update_payment(payment_id, payment)
+        await PaymentService.update_payment(payment_id, payment)
     except Exception as e:
         raise HTTPException(
             status_code=400,
@@ -95,7 +94,7 @@ async def upload_evidence(payment_id: str, file: UploadFile):
         raise HTTPException(status_code=400, detail="Unsupported file type")
 
     try:
-        PaymentService.create_evidence(payment_id, content, file_name)
+        await PaymentService.create_evidence(payment_id, content, file_name)
     except Exception as e:
         raise HTTPException(
             status_code=400,
@@ -106,7 +105,13 @@ async def upload_evidence(payment_id: str, file: UploadFile):
 
 @router.get("/payment/{payment_id}/evidence")
 async def download_evidence(payment_id: str):
-    evidence = PaymentService.get_evidence(payment_id)
+    try:
+        evidence = await PaymentService.get_evidence(payment_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        )
 
     return StreamingResponse(
         BytesIO(evidence["content"]),

@@ -67,28 +67,30 @@ class PaymentService:
         return str(result.inserted_id)
 
     async def update_payment(payment_id: str, payment: Payment) -> str:
-        found_payment = await payment_collection.find_one({"_id": ObjectId(payment_id)})
+        found_payment = payment_collection.find_one({"_id": ObjectId(payment_id)})
         if not found_payment:
             raise Exception("Payment not found")
 
-        if payment.status == "completed":
-            evidence = await evidence_collection.find_one(
+        if payment.payee_payment_status == "completed":
+            evidence = evidence_collection.find_one(
                 {"payment_id": ObjectId(payment_id)}
             )
             if not evidence:
                 raise Exception(
                     "Unable to mark a payment as completed without evidence"
                 )
-        found_payment["due_date"] = payment.due_date
+        found_payment["payee_due_date"] = datetime.combine(
+            payment.payee_due_date, datetime.min.time()
+        )
         found_payment["due_amount"] = payment.due_amount
-        found_payment["status"] = payment.status
+        found_payment["payee_payment_status"] = payment.payee_payment_status
 
-        result = await payment_collection.update_one(
-            {"_id": payment_id}, {"$set": payment.model_dump()}
+        result = payment_collection.update_one(
+            {"_id": ObjectId(payment_id)}, {"$set": found_payment}
         )
 
         if result.matched_count == 0:
-            raise Exception("Payment not found")
+            raise Exception("Payment not found for id", payment_id)
         return
 
     def delete_payment(payment_id: str) -> str:
@@ -98,7 +100,7 @@ class PaymentService:
 
     async def create_evidence(payment_id: str, content, file_name: str) -> str:
 
-        payment = await payment_collection.find_one({"_id": ObjectId(payment_id)})
+        payment = payment_collection.find_one({"_id": ObjectId(payment_id)})
         if not payment:
             raise Exception("Payment not found")
 
@@ -107,17 +109,16 @@ class PaymentService:
             "filename": file_name,
             "content": content,
         }
+
         try:
-            await evidence_collection.insert_one(evidence_data)
+            evidence_collection.insert_one(evidence_data)
         except Exception as e:
             print("An error occurred while inserting the document:", e)
             raise e
         return
 
     async def get_evidence(payment_id: str) -> Evidence:
-        evidence = await evidence_collection.find_one(
-            {"payment_id": ObjectId(payment_id)}
-        )
+        evidence = evidence_collection.find_one({"payment_id": ObjectId(payment_id)})
         if not evidence:
             raise Exception("Evidence not found")
         return evidence
