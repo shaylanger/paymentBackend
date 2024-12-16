@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "paymentserver"
+version = "0.1.0"
+description = "A server to host the crud apis for the payment app"
+authors = ["Shay Langer"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+dependency-injector = "^4.44.0"
+fastapi = "^0.115.6"
+uvicorn = "^0.32.1"
+pydantic = {extras = ["email"], version = "^2.10.3"}
+bson = "^0.5.10"
+pandas = "^2.2.3"
+pymongo = "^4.10.1"
+python-multipart = "^0.0.19"
+certifi = "^2024.12.14"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
